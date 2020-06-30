@@ -52,8 +52,9 @@ double simpson( double a, double b, int n, double (*f)(double) )
 {
   double S, h;
   int i;
+  n=n/(2.0);
 
-  h = ( b - a ) /( 2.0*n ) ;  /* 刻み幅の指定 */
+  h = ( b - a ) / (2.0*n) ;  /* 刻み幅の指定 */
 
   /* シンプソン公式 */
   S = ( (*f)(a) + (*f)(b) ) ;
