@@ -21,7 +21,7 @@ int main(void)
 
   printf("4.0/(1+x*x)を[0,1]で積分します。分割数は%dです\n", 2*n);
   printf("結果は%20.15fです\n",simpson(0.0, 1.0, n, func2) );
-  printf("絶対値誤差は%20.15fです\n",fabs(simpson(1.0,2.0,n,func1)-func1_ans));
+  printf("絶対値誤差は%20.15fです\n",fabs(simpson(0.0,1.0,n,func2)-func2_ans));
   return 0;
 }
 
