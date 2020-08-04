@@ -5,13 +5,13 @@
 #define N 4 /* N次正方行列 */
 void input_matrix(double a[N][N],char c,FILE* fin, FILE* fout);
 void input_vector(double b[N],char c,FILE* vector,FILE* fout);
-void lu_decompose(double a[N][N],int p[N]);
+void lu_decompose(double a[N][N],int p[N]);//LU分解
 void lu_solve(double a[N][N],double b[N],int p[N]);
 void make_identity_matrix(double identity_matrix[N][N]);/*単位行列つくる*/
 void change_to_transposed_matrix(double matrix[N][N]);
 /*転置行列　破壊を伴う(破壊的作業を伴う)*/
 void make_inverse_matrix(double upper_triangular_matrix[N][N],double identity_matrix[N][N],double inverse_matrix[N][N],int p[N]);
-
+/*逆行列を求める．引数は名前をみればわかるようにしてあります*/
 int main(void){
     FILE *fmatrix, *fout,*fvector;
     double a[N][N], b[N],I[N][N],a_inv[N][N];/*逆行列と単位行列定義*/
@@ -47,7 +47,7 @@ int main(void){
 }
 void make_inverse_matrix(double upper_triangular_matrix[N][N],double identity_matrix[N][N],double inverse_matrix[N][N],int p[N]){
   int i,j;
-  double column_vector[N];
+  double column_vector[N];//列ベクトル
   for(i=0;i<N;i++){
     for(j=0;j<N;j++){
       column_vector[j]=identity_matrix[i][j];
@@ -64,7 +64,7 @@ void make_identity_matrix(double identity_matrix[N][N]){
   for(i=0;i<N;i++){
     for(j=0;j<N;j++){
       if(i==j){
-        identity_matrix[i][j]=1;
+        identity_matrix[i][j]=1;//対角成分が1
       }
       else{
         identity_matrix[i][j]=0;
