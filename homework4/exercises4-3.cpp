@@ -17,7 +17,7 @@ int main(void){
     if((error=fopen_s(&fin,"input_exercises4-3.dat","r"))!=0) exit(1);
     if((error=fopen_s(&fout,"output_exercises4-3.dat","w"))!=0) exit(1);
     input_matrix(a,'A',fin,fout); input_vector(b,'b',fin,fout);
-	  lu_decomp(a,p);
+	lu_decomp(a,p);
     lu_solve(a,b,p);
     fprintf(fout,"Ax=bの解は次の通りです\n");
 	for(i=0;i<N;i++){ fprintf(fout,"%f\n",b[i]); }
