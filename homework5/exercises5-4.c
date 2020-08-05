@@ -5,20 +5,23 @@
 #define M 6 /* データのペア数 */
 #define N 3 /* N次式で近似 */
 
+/*LU分解を用いると計算回数を減らせる．計算回数を減らす目的でコードを書き換える．*/
+
 /* ベクトルの入力 */
 void input_vector2(double *b, char c, FILE *fin, FILE *fout);
 /*  行列の領域確保 */
-/* 部分ピボット選択付きガウス消去法  この関数は本質手kにLU分解と同じ */
+/* 部分ピボット選択付きガウス消去法．この関数は本質的にLU分解と同じ．結局使わない関数 */
 void gauss2(double a[N + 1][N + 1], double b[N + 1], int n);//we should think about variable(trigger)"n"
-/* 最小2乗近似呼び出し */
+/* 最小2乗近似呼び出し.呼び出しではあるが実質の計算はこれにより行われる．*/
 void least_square_coef(double x[M], double y[M], double a[N + 1], FILE *fout,int pipot[N+1],double p[N+1][N+1]);
 /* 最小2乗近似 このプログラムでは使われていない*/
 void least_square(double x[M], double y[M], FILE *fout);
-/* 曲線の生成 */
+/* 曲線の生成．　元のコードがここで計算の指示をしていたため，ピポットをここで定義する． */
 void curve(double x[M], double y[M], double t[M], FILE *fout);
 /* 曲線上の点列データ出力 */
 void curve_shape(double a0[N + 1], double b0[N + 1], FILE *fp1);
-/*LU分解　なくても問題なさそうだけど参考コードに合わせて引数nを追加*/
+/*LU分解する．上三角行列とピポット取得．なくても問題なさそうだけど参考コードに合わせて引数nを追加
+計算回数を減らすためには一回LU分解をするだけでよい．*/
 void lu_decompose(double a[N+1][N+1], int pipot[N+1],int n);
 /*LU分解でN(キャピタルｎのところ）をnに変換する．引数をN+1にすることで互換性をもたせる．*/
 void lu_solve(double a[N+1][N+1], double b[N+1], int pipot[N+1],int n);
@@ -54,7 +57,7 @@ int main(void)
     input_vector2(x, 'x', fin, fout); /* ベクトルxの入出力 */
     input_vector2(y, 'y', fin, fout); /* ベクトルyの入出力 */
     input_vector2(t, 't', fin, fout); /* パラメータtの入出力 */
-
+    /*計算を行います．*/
     curve(x, y, t, fout); /* 最小2乗近似 */
 
     curve_shape(a, b, fout1);
@@ -69,8 +72,8 @@ void curve(double x[M], double y[M], double t[M], FILE *fout)
 {
     int pipot[N+1];
     double p[N+1][N+1];
-    least_square_coef(t, x, a, fout,pipot,p);
-    least_square_coef(t, y, b, fout,pipot,p);//ここで渡すpは一回目のpを上三角行列に変換したもの
+    least_square_coef(t, x, a, fout,pipot,p);/*まだpは定まってない．ここで，pを作りLU分解*/
+    least_square_coef(t, y, b, fout,pipot,p);/*ここで渡すpは一回目のpを上三角行列に変換したもの*/
 }
 
 void least_square_coef(double x[M], double y[M], double a[N + 1], FILE *fout,int pipot[N+1],double p[N+1][N+1])
@@ -78,7 +81,7 @@ void least_square_coef(double x[M], double y[M], double a[N + 1], FILE *fout,int
     /*double p[N + 1][N + 1];*/
     int i, j, k;
 
-    /* 右辺ベクトルの作成   xとyによって校正．つまり，ここは2回の施行で変化あるため計算を減らせない*/
+    /* 右辺ベクトルの作成   xとyによって構成．つまり，ここは2回の施行で変化あるため計算を減らせない*/
     for (i = 0; i <= N; i++){
         a[i] = 0.0;
         for (j = 0; j < M; j++){
@@ -86,9 +89,8 @@ void least_square_coef(double x[M], double y[M], double a[N + 1], FILE *fout,int
         }
     }
     if (cnt_lu==0){
-
-    /* 係数行列の作成 ここは変数xとNのみで構成．どちらもｔであるため一回の計算で十分．
-    二回目にこれをやるとLU分解で作成した上三角行列が塗り替えられる．*/
+        /* 係数行列の作成 ここは変数xとNのみで構成される．どちらもｔであるため一回の計算で十分．
+        二回目にこれをやるとLU分解で作成した上三角行列が塗り替えられる．*/
         for (i = 0; i <= N; i++){
             for (j = 0; j <= i; j++){
                 p[i][j] = 0.0;
@@ -98,12 +100,11 @@ void least_square_coef(double x[M], double y[M], double a[N + 1], FILE *fout,int
                 p[j][i] = p[i][j];
             }
         }
-    /* 連立1次方程式を解く. 結果はaに上書き */
-    /*gauss2(p, a, N + 1);*/
-
+        /* 連立1次方程式を解く. 結果はaに上書き */
+        /*gauss2(p, a, N + 1);*/
         /*2回目以降行列の変換をしないようにするため．クラスの静的メンバ変数のような使い方．コンストラクタの様に使う*/
         lu_decompose(p,pipot,N+1);
-        cnt_lu++;
+        cnt_lu++;/*これにより2解明以降はpについての書き換えやピポットの変更は行われない*/
     }
     lu_solve(p,a,pipot,N+1);
 
@@ -130,7 +131,7 @@ void least_square_coef(double x[M], double y[M], double a[N + 1], FILE *fout,int
     fprintf(fout, "\n");
 }
 
-/* 部分ピボット選択付きガウス消去法 */
+/* 部分ピボット選択付きガウス消去法.　今回は使わない．　この関数に合わせてLU分解を変更させる． */
 void gauss2(double a[N + 1][N + 1], double b[N + 1], int n){
     int i, j, k, ip;
     double alpha, tmp;
